@@ -10,7 +10,7 @@ const Auth = {
       if (response.statusCode == 200) {
             parseXML(response.content, function (err, result) {
                 if(!err) {
-                    return result;
+                    return result.FormCaptures.FormCapture;
                 } else {
                     return err;
                 }
