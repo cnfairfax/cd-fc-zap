@@ -9,7 +9,7 @@ const Auth = {
       if (response.statusCode == 200) {
         return response;
       } else {
-        throw new Error('Invalid crenditial. Please double check your Account Key and Token.');
+        throw new Error('Invalid crenditials. Please double check your Account Key and Token.');
       }
     });
   },
