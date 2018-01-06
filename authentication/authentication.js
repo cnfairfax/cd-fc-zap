@@ -6,16 +6,11 @@ const Auth = {
       url: 'https://{{bundle.authData.subdomain}}.clickdimensions.com/Service.svc/v1/account/{{bundle.authData.account_key}}/captures?pageSize=1',
       method: 'GET'
     }).then((response) => {
-      var parseXML = require('xml2js').parseString;
       if (response.statusCode == 200) {
-            parseXML(response.content, function (err, result) {
-                if(!err) {
-                    return result.FormCaptures.FormCapture;
-                } else {
-                    return err;
-                }
-            });
-        }
+        return response;
+      } else {
+        throw new Error('Invalid crenditial. Please double check your Account Key and Token.');
+      }
     });
   },
   fields: [
