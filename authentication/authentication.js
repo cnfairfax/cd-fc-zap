@@ -2,17 +2,16 @@ const Auth = {
   type: 'custom',
   // "test" could also be a function
   test: (z, bundle) => {
-    z.request({
-      url: 'https://{{bundle.authData.subdomain}}.clickdimensions.com/Service.svc/v1/account/{{bundle.authData.account_key}}/captures?pageSize=1',
-      method: 'GET'
-    }).then((response) => {
-      if (response.statusCode == 200) {
-        return response;
-      } else {
-        throw new Error('Invalid crenditials. Please double check your Account Key and Token.');
-      }
+    return z
+      .request({
+        url: 'https://{{bundle.authData.subdomain}}.clickdimensions.com/Service.svc/v1/account/{{bundle.authData.account_key}}/captures?pageSize=1',
+        method: 'GET'
+      }).then((response) => {
+          response.throwForStatus();
+          return response;
     });
   },
+  connectionLabel: '{{bundle.authData.account_key}}',
   fields: [
     {
       key: 'account_key',
