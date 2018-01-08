@@ -1,4 +1,5 @@
-const recipe = require('./creates/recipe');
+const posted_form = require('./creates/posted_form');
+const form_capture = require('./resources/formCapture');
 const auth = require('./authentication/authentication');
 const includeAuth = require('./authentication/authHeader');
 
@@ -17,6 +18,7 @@ const App = {
   authentication: auth,
 
   resources: {
+    [form_capture.key]: form_capture
   },
 
   // If you want your trigger to show up, you better include it here!
@@ -29,7 +31,7 @@ const App = {
 
   // If you want your creates to show up, you better include it here!
   creates: {
-    [recipe.key]: recipe
+    [posted_form.key]: posted_form
   }
 };
 

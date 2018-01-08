@@ -1,40 +1,23 @@
 // We recommend writing your creates separate like this and rolling them
 // into the App definition at the end.
 module.exports = {
-  key: 'recipe',
+  key: 'posted_form',
 
   // You'll want to provide some helpful display labels and descriptions
   // for users. Zapier will put them into the UX.
-  noun: 'Recipe',
+  noun: 'Posted Form',
   display: {
-    label: 'Create Recipe',
-    description: 'Creates a new recipe.'
+    label: 'Create a Posted Form Record',
+    description: 'Creates a posted form record for your Form Capture.'
   },
 
   // `operation` is where the business logic goes.
   operation: {
     inputFields: [
-      {key: 'name', required: true, type: 'string'},
-      {key: 'directions', required: true, type: 'text', helpText: 'Explain how should one make the recipe, step by step.'},
-      {key: 'authorId', required: true, type: 'integer', label: 'Author ID'},
-      {key: 'style', required: false, type: 'string', helpText: 'Explain what style of cuisine this is.'},
+      {key: 'form_capture', required: true, label: 'Form Capture', dynamic: 'form_captureList.Key.Name'}
     ],
     perform: (z, bundle) => {
-      const promise = z.request({
-        url: 'http://57b20fb546b57d1100a3c405.mockapi.io/api/recipes',
-        method: 'POST',
-        body: JSON.stringify({
-          name: bundle.inputData.name,
-          directions: bundle.inputData.directions,
-          authorId: bundle.inputData.authorId,
-          style: bundle.inputData.style,
-        }),
-        headers: {
-          'content-type': 'application/json'
-        }
-      });
-
-      return promise.then((response) => JSON.parse(response.content));
+      
     },
     
     // In cases where Zapier needs to show an example record to the user, but we are unable to get a live example
