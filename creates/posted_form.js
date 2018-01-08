@@ -14,7 +14,9 @@ module.exports = {
   // `operation` is where the business logic goes.
   operation: {
     inputFields: [
-      {key: 'form_capture', required: true, label: 'Form Capture', dynamic: 'form_captureList.Key.Name'}
+      {key: 'form_capture', required: true, label: 'Form Capture', dynamic: 'form_captureList.Key.Name'},
+      {key: 'success', required: true, label: 'Success URL', helpText: 'This is the redirect URL for a successful form submission. This can be found on the Form Capture record in your CRM.', placeholder: 'http://example.url'},
+      {key: 'error', required: true, label: 'Error URL', helpText: 'This is the redirect URL for an errored form submission. This can be found on the Form Capture record in your CRM.', placeholder: 'http://example.url'}
     ],
     perform: (z, bundle) => {
       
