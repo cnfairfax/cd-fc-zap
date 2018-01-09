@@ -17,7 +17,6 @@ module.exports = {
             url: 'https://{{bundle.authData.subdomain}}.clickdimensions.com/Service.svc/v1/account/' + bundle.authData.account_key + '/captures',
             method: 'GET'
           }).then((response) => {
-            z.console.log(response.content);
             response.throwForStatus();
             return parseXML(response.content).then(function(js) {
               var i = 1;
