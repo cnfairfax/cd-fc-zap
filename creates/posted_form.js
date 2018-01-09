@@ -1,5 +1,7 @@
 var parseXML = require('xml2js-es6-promise');
+const parseXMLSync = require('xml2js-parser').parseStringSync;
 var hydrateFormField = require('../hydrators/form_fields.js');
+var Promise = require('bluebird');
 
 // definte the generator for the form capture field fields
 var getFormFields = (z, bundle) => {
@@ -16,54 +18,59 @@ var getFormFields = (z, bundle) => {
       // check if the FormCaptureField attribute is an array, if so, carry on
       if(Array.isArray(js.FormCaptureFields.FormCaptureField)) {
         var Fields = js.FormCaptureFields.FormCaptureField;
-        // This is my problem. How do I inline the requests created by this loop?!
+        var requests = [];
+        // for each field in Fields, fire off a request to get the FormField object
         for(var i = 0; i < Fields.length; i++) {
-          Fields[i]['formFieldID'] = z.request({
-            url: 'https://' + bundle.authData.subdomain + '.clickdimensions.com/Service.svc/v1/account/' + bundle.authData.account_key + '/formfields/' + Fields[i].formFieldKey,
+          z.console.log('BEFORE REQUEST - FIELD' + i + ': ' + JSON.stringify(Fields[i]))
+          requests[i] = z.request({
+            url: 'https://' + bundle.authData.subdomain + '.clickdimensions.com/Service.svc/v1/account/' + bundle.authData.account_key + '/formfields/' + Fields[i].FormFieldKey,
             method: 'GET'
-          }).then((response) => {
-            if(response.status < 300) {
-                return parseXML(response.content).then((result) => {
-                    return result.FormField.FormFieldID;
-                });
-            }
-        });
+          });
         }
-        return Fields;
+        // catch all FormField requests in promise.all and wait for all of them to complete, then process the array of values returned
+        return Promise.all(requests).then((values) => {
+          z.console.log('(VALUES): ' + JSON.stringify(values));
+          z.console.log('FIELDS: ' + JSON.stringify(Fields));
+          // create allFields, this is the array of fields that will be returned to Zapier
+          var allFields = [];
+          // Parse the XML returned by each request and put it in its proper spot in its respective object within allFields
+          for (var j = 0; j < Fields.length; j++) {
+            // all other XML parses are async. this is a different library to handle 
+            // a synchronous parse because we're already in return Hell as it is...
+            var hydroField = parseXMLSync(values[j].content);
+            z.console.log('VALUE CONTENT: ' + JSON.stringify(hydroField));
+            // if there is no issue with this request, populate the field data as it should be
+            if(values[j].status < 300) {
+              Fields[j]['formFieldID'] = hydroField.FormField.FormFieldId;
+            } else {
+              // if there was an error, create a custom field to communicate that error to the customer
+              Fields[j]['formFieldID'] = j;
+              Fields[j].FormFieldLabel = 'There was an error collecting this field: ' + hydroField.Error.Message + '. Refresh fields to try again.';
+            }
+            // Set up this instance of allFields
+            allFields[j] = {
+              key: Fields[j].formFieldID[0],
+              label: Fields[j].FormFieldLabel[0],
+              required: Fields[j].Required[0]
+            }
+          }
+          // return that ISH!
+          z.console.log('ALL FIELDS: ' + JSON.stringify(allFields));
+          return allFields;
+        }).catch((err) => { z.console.log(err) });
       } else {
         // if the result is not an array, build custom field 
         // notifying customer of error and return that field
-        z.console.log('We got to the else statement!');
+        z.console.log('NO FIELDS');
         
         js.FormCaptureFields['FormCaptureField'] = {};
         js.FormCaptureFields.FormCaptureField['no_fields_error']  = 'There are no Form Capture Fields associated with this Form Capture. Please associate Form Capture Fields to this Form Capture in your CRM and then try again.';
         js.FormCaptureFields.FormCaptureField['id'] = '1';
 
         z.console.log('JUST BEFORE RETURN IN ELSE: ' + js.FormCaptureFields.FormCaptureField.no_fields_error);
-        return js.FormCaptureFields;
+        var field = js.FormCaptureFields;
+        return [{key: field.FormCaptureField.id, label: 'There was a problem fetching your form fields: ' + field.FormCaptureField.no_fields_error}]
       }
-    }).then(function(results) {
-      z.console.log('RESULTS:' + JSON.stringify(results));
-      // process results with finalOutput and then return 
-      // the return value of final Output to generate form fields. 
-      // Form fields should be an array of 1 or more objects
-      function finalOutput(v) {
-        if(v.FormCaptureField) {
-          return [{key: v.id, label: 'There was a problem fetching your form fields: ' + v.FormCaptureField.no_fields_error}]
-        } else {
-          var allFields = [];
-          v.forEach(function(field, i) {
-            allFields[i] = {
-              key: field.formFieldID,
-              label: field.FormFieldLabel,
-              required: field.Required
-            };
-          });
-          z.console.log('THIS SHOULD BE ALL THE FIELDS:\n' + JSON.stringify(allFields));
-          return allFields;
-        }
-      }
-      return finalOutput(results);
     });
 }
 
