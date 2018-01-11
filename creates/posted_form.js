@@ -21,7 +21,6 @@ var getFormFields = (z, bundle) => {
         var requests = [];
         // for each field in Fields, fire off a request to get the FormField object
         for(var i = 0; i < Fields.length; i++) {
-          z.console.log('BEFORE REQUEST - FIELD' + i + ': ' + JSON.stringify(Fields[i]))
           requests[i] = z.request({
             url: 'https://' + bundle.authData.subdomain + '.clickdimensions.com/Service.svc/v1/account/' + bundle.authData.account_key + '/formfields/' + Fields[i].FormFieldKey,
             method: 'GET'
@@ -29,8 +28,6 @@ var getFormFields = (z, bundle) => {
         }
         // catch all FormField requests in promise.all and wait for all of them to complete, then process the array of values returned
         return Promise.all(requests).then((values) => {
-          z.console.log('(VALUES): ' + JSON.stringify(values));
-          z.console.log('FIELDS: ' + JSON.stringify(Fields));
           // create allFields, this is the array of fields that will be returned to Zapier
           var allFields = [];
           // Parse the XML returned by each request and put it in its proper spot in its respective object within allFields
@@ -38,7 +35,6 @@ var getFormFields = (z, bundle) => {
             // all other XML parses are async. this is a different library to handle 
             // a synchronous parse because we're already in return Hell as it is...
             var hydroField = parseXMLSync(values[j].content);
-            z.console.log('VALUE CONTENT: ' + JSON.stringify(hydroField));
             // if there is no issue with this request, populate the field data as it should be
             if(values[j].status < 300) {
               Fields[j]['formFieldID'] = hydroField.FormField.FormFieldId;
@@ -55,19 +51,16 @@ var getFormFields = (z, bundle) => {
             }
           }
           // return that ISH!
-          z.console.log('ALL FIELDS: ' + JSON.stringify(allFields));
           return allFields;
         }).catch((err) => { z.console.log(err) });
       } else {
         // if the result is not an array, build custom field 
         // notifying customer of error and return that field
-        z.console.log('NO FIELDS');
         
         js.FormCaptureFields['FormCaptureField'] = {};
         js.FormCaptureFields.FormCaptureField['no_fields_error']  = 'There are no Form Capture Fields associated with this Form Capture. Please associate Form Capture Fields to this Form Capture in your CRM and then try again.';
         js.FormCaptureFields.FormCaptureField['id'] = '1';
 
-        z.console.log('JUST BEFORE RETURN IN ELSE: ' + js.FormCaptureFields.FormCaptureField.no_fields_error);
         var field = js.FormCaptureFields;
         return [{key: field.FormCaptureField.id, label: 'There was a problem fetching your form fields: ' + field.FormCaptureField.no_fields_error}]
       }
@@ -95,7 +88,8 @@ module.exports = {
       getFormFields
     ],
     perform: (z, bundle) => {
-      
+      z.conole.log(JSON.stringify(bundle));
+      return bundle
     },
     
     // In cases where Zapier needs to show an example record to the user, but we are unable to get a live example

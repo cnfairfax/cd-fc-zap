@@ -28,7 +28,7 @@ const Auth = {
     {
       key: 'subdomain',
       required: true,
-      choices: {app: 'app', app_eu: 'app-eu', app_au: 'app-au'},
+      choices: ['app', 'app-eu', 'app-au'],
       helpText: 'This is the subdomain of your Email Template builder URLs. You can find this by navigating to an Email Template record and clicking "FULLSCREEN" on the top ribbon. This will be the subdomain of the new window that opens.'
     }
   ]

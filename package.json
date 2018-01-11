@@ -1,6 +1,6 @@
 {
   "name": "clickdimensions-post-form-capture",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "A mechanism to allow Zapier to programatically post form captures to ClickDimensions",
   "repository": "zapier/zapier-platform-example-app-create",
   "homepage": "https://www.clickdimensions.com/",
