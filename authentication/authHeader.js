@@ -5,7 +5,6 @@ const includeAuthHeader = function (request, z, bundle) {
     var uri = request.url;
     
     function getAuth(token, uri) {
-        z.console.log('SUBDOMAIN: ' + subD);
         //modify uri within getAuth because closures...
         uri = uri.replace('https://' + bundle.authData.subdomain + '.clickdimensions.com', '');
         //pageSize, action, and userid should be the only parameters provided and there should only ever be one.

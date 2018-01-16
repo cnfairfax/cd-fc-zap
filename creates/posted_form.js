@@ -7,7 +7,7 @@ var Promise = require('bluebird');
 var getFormFields = (z, bundle) => {
   // fetch form capture fields associated with the form capture record
   return z.request({
-    url: 'https://' + bundle.authData.subdomain + '.clickdimensions.com/Service.svc/v1/account/' + bundle.authData.account_key + '/captures/' + bundle.inputData.form_capture + '/fields',
+    url: 'https://' + bundle.authData.subdomain + '.clickdimensions.com/Service.svc/v1/account/' + bundle.authData.account_key + '/captures/' + bundle.inputData.form_capture_id + '/fields',
     method: 'GET'
   }).then((response) => {
     // throw error if status > 300
@@ -52,7 +52,10 @@ var getFormFields = (z, bundle) => {
           }
           // return that ISH!
           return allFields;
-        }).catch((err) => { z.console.log(err) });
+        }).catch((err) => { 
+          z.console.log(err) 
+          throw new Error(err);
+        });
       } else {
         // if the result is not an array, build custom field 
         // notifying customer of error and return that field
@@ -69,45 +72,57 @@ var getFormFields = (z, bundle) => {
 
 module.exports = {
   key: 'posted_form',
-
-  // You'll want to provide some helpful display labels and descriptions
-  // for users. Zapier will put them into the UX.
   noun: 'Posted Form',
   display: {
     label: 'Create a Posted Form Record',
     description: 'Creates a posted form record for your Form Capture.'
   },
-
-  // `operation` is where the business logic goes.
   operation: {
     inputFields: [
-      {key: 'form_capture', required: true, label: 'Form Capture', dynamic: 'form_captureList.Key.Name'},
-      {key: 'success', required: true, label: 'Success URL', helpText: 'This is the redirect URL for a successful form submission. This can be found on the Form Capture record in your CRM.', placeholder: 'http://example.url'},
-      {key: 'error', required: true, label: 'Error URL', helpText: 'This is the redirect URL for an errored form submission. This can be found on the Form Capture record in your CRM.', placeholder: 'http://example.url'},
+      {key: 'form_capture_id', required: true, label: 'Form Capture', dynamic: 'form_captureList.Key.Name'},
       {key: 'post_url', required: true, label: 'Post URL', helpText: 'This is the URL that your Form Capture posts to. It can be found in the Location field on the Form Catpure record', placeholder: 'http://example.url'},
+      {key: 'success_url', required: true, label: 'Success URL', helpText: 'This is the redirect URL for a successful form submission. This can be found on the Form Capture record in your CRM.', placeholder: 'http://example.url'},
+      {key: 'error_url', required: true, label: 'Error URL', helpText: 'This is the redirect URL for an errored form submission. This can be found on the Form Capture record in your CRM.', placeholder: 'http://example.url'},
+      {key: 'domain', required: true, label: 'Website Domain', helpText: 'This is the Source URL of the form posted to Zapier.'},
+      {key: 'cd_visitorkey', required: true, label: 'CUVID Key', helpText: 'This is the Visitor ID found in the CUVID cookie'},
       getFormFields
     ],
     perform: (z, bundle) => {
-      z.conole.log(JSON.stringify(bundle));
-      return bundle
+      var postedData = {};
+      Object.keys(bundle.inputData).forEach(function(key) {
+        if(key != 'success_url' || key != 'error_url' || key != 'form_capture_id' || key != 'post_url' || key != 'domain') {
+          postedData[key] = bundle.inputData[key];
+        }
+      });
+      z.console.log('SENDING THIS: ' + JSON.stringify(postedData));
+      return z.request({
+        url: bundle.inputData.post_url,
+        method: 'POST',
+        form: postedData,
+        redirect: 'manual',
+        headers: {
+          'Referer': bundle.inputData.domain
+        }
+      }).then((response) => {
+        if(response.getHeader('location') == bundle.inputData.success_url || response.getHeader('location').slice(0, -1) == bundle.inputData.success_url) {
+          return postedData;
+        } else if (response.getHeader('location') == bundle.inputData.error_url || response.getHeader('location').slice(0, -1) == bundle.inputData.error_url) {
+          throw new Error('OOOPS');
+        }
+      });
     },
-    
-    // In cases where Zapier needs to show an example record to the user, but we are unable to get a live example
-    // from the API, Zapier will fallback to this hard-coded sample. It should reflect the data structure of
-    // returned records, and have obviously dummy values that we can show to any user.
     sample: {
       id: 1,
-      createdAt: 1472069465,
-      name: 'Best Spagetti Ever',
-      authorId: 1,
-      directions: '1. Boil Noodles\n2.Serve with sauce',
-      style: 'italian'
+      form_capture_id: 111111111,
+      success: true,
+      cd_visitorkey: 2222222,
+      formfields: {
+        firstName: 'Jimmy',
+        lastName: 'Stewart',
+        emailAddress: 'jstewart@email.com'
+      }
     },
-
-    // If the resource can have fields that are custom on a per-user basis, define a function to fetch the custom
-    // field definitions. The result will be used to augment the sample.
-    // outputFields: () => { return []; }
-    // Alternatively, a static field definition should be provided, to specify labels for the fields
+    // Function defines where to get output fields
     outputFields: [
       {key: 'id', label: 'ID'},
       {key: 'createdAt', label: 'Created At'},
