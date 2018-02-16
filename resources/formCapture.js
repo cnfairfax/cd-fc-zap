@@ -2,13 +2,12 @@ var parseXML = require('xml2js-es6-promise');
 
 module.exports = {
   key: 'form_capture',
-  // You'll want to provide some helpful display labels and descriptions
-  // for users. Zapier will put them into the UX.
   noun: 'Form Capture',
   list: {
     display: {
       label: 'Form Capture Records',
-      description: 'Finds all Form Capture Records'
+      description: 'Finds all Form Capture Records',
+      hidden: true
     },
     operation: {
       perform: (z, bundle) => {
@@ -18,12 +17,10 @@ module.exports = {
             method: 'GET'
           }).then((response) => {
             response.throwForStatus();
-            return parseXML(response.content).then(function(js) {
-              var i = 1;
+            return parseXML(response.content).then((js) => {
               // CD API doesn't provide ID attribute w/ form capture objects, so, fudge it. You'll never use this attribute, but Zapier won't load the data w/out it.
-              js.FormCaptures.FormCapture.forEach(function(capture) {
-                capture['id'] = i;
-                i++;
+              js.FormCaptures.FormCapture.forEach((capture) => {
+                capture['id'] = capture.Key[0];
               });
               return js.FormCaptures.FormCapture
             });
@@ -51,6 +48,7 @@ module.exports = {
     VisitorEntity: 'lead'
   },
   outputFields: [
+    {key: 'id', label: 'ID'},
     {key: 'AccountKey', label: 'Account Key'},
     {key: 'CampaignCode', label: 'Campaign Code'},
     {key: 'CrmRecordKey', label: 'Crm Record Key'},

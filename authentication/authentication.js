@@ -1,6 +1,5 @@
 const Auth = {
   type: 'custom',
-  // "test" could also be a function
   test: (z, bundle) => {
     return z
       .request({

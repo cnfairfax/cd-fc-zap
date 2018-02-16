@@ -2,7 +2,6 @@ const posted_form = require('./creates/posted_form');
 const form_capture = require('./resources/formCapture');
 const auth = require('./authentication/authentication');
 const includeAuth = require('./authentication/authHeader');
-const hydrateFormField = require('./hydrators/form_fields.js');
 
 // Now we can roll up all our behaviors in an App.
 const App = {
@@ -11,9 +10,7 @@ const App = {
   version: require('./package.json').version,
   platformVersion: require('zapier-platform-core').version,
   
-  hydrators: {
-    hydrateFormField: hydrateFormField
-  },
+  hydrators: {},
 
   beforeRequest: [includeAuth],
 

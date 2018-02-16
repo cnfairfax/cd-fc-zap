@@ -1,8 +1,8 @@
 {
-  "name": "clickdimensions-post-form-capture",
-  "version": "0.1.6",
-  "description": "A mechanism to allow Zapier to programatically post form captures to ClickDimensions",
-  "repository": "zapier/zapier-platform-example-app-create",
+  "name": "ClickDimensions",
+  "version": "0.2.0",
+  "description": "Email Marketing & Marketing Automation for Microsoft Dynamics 365/CRM",
+  "repository": "cnfairfax/cd-fc-zap",
   "homepage": "https://www.clickdimensions.com/",
   "author": "Chris Fairfax & Christian Krezdorn",
   "license": "BSD-3-Clause",
