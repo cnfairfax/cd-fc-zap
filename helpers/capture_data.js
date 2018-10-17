@@ -1,8 +1,10 @@
 const parseXML = require('xml2js-es6-promise');
 const parseXMLSync = require('xml2js-parser').parseStringSync;
 const Promise = require('bluebird');
+const To = require('./To.js');
 
-module.exports = (z, bundle) => {
+module.exports = async (z, bundle) => {
+    // Refactor to async/await To(promise) pattern - easier to read - bundle errors in single try/catch
     return z.request({
         url: 'https://' + bundle.authData.subdomain + '.clickdimensions.com/Service.svc/v1/account/' + bundle.authData.account_key + '/captures/' + bundle.inputData.form_capture_id,
         method: 'GET'
