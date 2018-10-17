@@ -1,4 +1,5 @@
 var parseXML = require('xml2js-es6-promise');
+var To = require('./To.js');
 
 module.exports = {
   key: 'form_capture',
@@ -10,24 +11,31 @@ module.exports = {
       hidden: true
     },
     operation: {
-      perform: (z, bundle) => {
-        return z
-          .request({
-            url: 'https://{{bundle.authData.subdomain}}.clickdimensions.com/Service.svc/v1/account/' + bundle.authData.account_key + '/captures',
-            method: 'GET'
-          }).then((response) => {
-            response.throwForStatus();
-            return parseXML(response.content).then((js) => {
-              // CD API doesn't provide ID attribute w/ form capture objects, so, fudge it. You'll never use this attribute, but Zapier won't load the data w/out it.
-              js.FormCaptures.FormCapture.forEach((capture) => {
-                capture['id'] = capture.Key[0];
-              });
-              return js.FormCaptures.FormCapture
-            });
-          });
+      perform: async (z, bundle) => {
+        try {
+
+        }
+        catch (err) {
+          throw new Error(err);
+        }
+        var [getErr, response] = await To(z.request({
+          url: 'https://{{bundle.authData.subdomain}}.clickdimensions.com/Service.svc/v1/account/' + bundle.authData.account_key + '/captures',
+          method: 'GET'
+        }))
+        if(getErr) throw new Error(getErr);
+
+        response.throwForStatus();
+            
+        var [ parseErr, js ] = await To(parseXML(response.content));
+        if(parseErr) throw new Error(parseErr);
+
+        // CD API doesn't provide ID attribute w/ form capture objects, so, fudge it. You'll never use this attribute, but Zapier won't load the data w/out it.
+        js.FormCaptures.FormCapture.forEach((capture) => {
+          capture['id'] = capture.Key[0];
+        });
+        return js.FormCaptures.FormCapture
       }
     }
-    
   },
   sample: {
     id: '1',

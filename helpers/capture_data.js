@@ -10,8 +10,8 @@ module.exports = async (z, bundle) => {
             method: 'GET'
         }));
         if(getErr) throw new Error(getErr)
-
         res.throwForStatus();
+        
         var [parseErr, data] = await To(parseXML(res.content));
         if(parseErr) throw new Error(parseErr);
 

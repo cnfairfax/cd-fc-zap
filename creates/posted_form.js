@@ -19,7 +19,7 @@ module.exports = {
     ],
     perform: async (z, bundle) => {
       try {
-        // Filter out non-form-field properties to build the posted data object - forEach probably isn't optimal, here, revisit this.
+        // Filter out non-form-field properties to build the posted data object
         var postedData = {};
         Object.keys(bundle.inputData).forEach((key) => {
             if(key != 'success_url' && key != 'error_url' && key != 'form_capture_id' && key != 'post_url' && key != 'domain') {
