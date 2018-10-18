@@ -35,7 +35,7 @@ module.exports = async (z, bundle) => {
       
       // create allFields, this is the array of fields that will be returned to Zapier
       try {
-        var allFields = values.map( (response, index) => {
+        var allFields = await values.map( async (response, index) => {
   
           var [ fieldParseErr, hydratedField ] = await To(parseXML(response.content));
           if(fieldParseErr) throw new Error(fieldParseErr)
